@@ -6,6 +6,10 @@ COPY . .
 RUN dotnet restore
 RUN dotnet build -c $BUILD_CONFIGURATION --no-restore
 
+FROM build AS test
+RUN TEST_DLL="PromoCodeFactory.UnitTests/bin/${BUILD_CONFIGURATION}/net10.0/PromoCodeFactory.UnitTests.dll" && \
+    dotnet vstest "$TEST_DLL"
+
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
 RUN dotnet publish ./PromoCodeFactory.WebHost/PromoCodeFactory.WebHost.csproj \
