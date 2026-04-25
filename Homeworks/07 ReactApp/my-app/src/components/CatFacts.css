@@ -1,0 +1,39 @@
+.fetch-button {
+  font-size: 16px;
+  padding: 10px 24px;
+  border-radius: 6px;
+}
+
+.cat-fact-card {
+  background-color: green;
+  border: 1px solid #c3e6cb;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin: 8px 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.cat-fact-card p {
+  color: white;
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.error-card {
+  background-color: rgb(202, 70, 70);
+  border: 1px solid #f5c6cb;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin: 8px 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.error-card p {
+  color: white;
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+}
