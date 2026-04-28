@@ -12,15 +12,13 @@ interface CatFactsResponse {
     data: CatFact[];
 }
 
-function CatFactPage() {
+function CatFactsPage() {
     const [facts, setFacts] = useState<CatFact[] | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
 
     const onClick = async () => {
-        setLoading(true);
-        setError(null);
-        setFacts(null);
+        setLoading(true);        
 
         try {
             const response = await fetch("https://catfact.ninja/facts");
@@ -32,13 +30,15 @@ function CatFactPage() {
             const result: CatFactsResponse = await response.json();
 
             if (result.data.length > 0) {
+                setError(null);
                 setFacts(result.data);
             } else {
                 throw new Error('No facts returned from API');
             }
         } catch(err) {
-            const message = err instanceof Error ? err.message : 'An unknown error occurred';
-            setError(message);
+            const message = err instanceof Error ? err.message : 'An unknown error occurred'; 
+            setFacts(null);
+            setError(message);            
         } finally {
             setLoading(false);
         }
@@ -50,11 +50,11 @@ function CatFactPage() {
             <button type="button" className="fetch-button" onClick={onClick} disabled={loading}>
                 {loading ? "Loading..." : "Get Cat Facts"}
             </button>
-            
-            {facts && facts.map((fact) => <CatFactCard fact={fact.fact} key={fact.fact} />) }
+
             {error && <ErrorCard message={error} />}
+            {facts && facts.map((fact) => <CatFactCard fact={fact.fact} key={fact.fact} />) }            
         </main>
     );
 }
 
-export default CatFactPage;
+export default CatFactsPage;
