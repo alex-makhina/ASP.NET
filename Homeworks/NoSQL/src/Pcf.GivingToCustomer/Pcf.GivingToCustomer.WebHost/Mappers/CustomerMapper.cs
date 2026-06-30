@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Pcf.GivingToCustomer.Core.Domain;
 using Pcf.GivingToCustomer.WebHost.Models;
 
@@ -22,12 +21,7 @@ namespace Pcf.GivingToCustomer.WebHost.Mappers
             customer.LastName = model.LastName;
             customer.Email = model.Email;
 
-            customer.Preferences = preferences.Select(x => new CustomerPreference()
-            {
-                CustomerId = customer.Id,
-                Preference = x,
-                PreferenceId = x.Id
-            }).ToList();
+            customer.PreferenceIds = preferences.Select(x => x.Id).ToList();
             
             return customer;
         }

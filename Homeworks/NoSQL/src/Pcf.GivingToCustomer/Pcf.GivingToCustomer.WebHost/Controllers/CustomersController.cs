@@ -20,12 +20,15 @@ namespace Pcf.GivingToCustomer.WebHost.Controllers
     {
         private readonly IRepository<Customer> _customerRepository;
         private readonly IRepository<Preference> _preferenceRepository;
+        private readonly IRepository<PromoCode> _promoCodeRepository;
 
         public CustomersController(IRepository<Customer> customerRepository, 
-            IRepository<Preference> preferenceRepository)
+            IRepository<Preference> preferenceRepository,
+            IRepository<PromoCode> promoCodeRepository)
         {
             _customerRepository = customerRepository;
             _preferenceRepository = preferenceRepository;
+            _promoCodeRepository = promoCodeRepository;
         }
         
         /// <summary>
@@ -58,7 +61,13 @@ namespace Pcf.GivingToCustomer.WebHost.Controllers
         {
             var customer =  await _customerRepository.GetByIdAsync(id);
 
-            var response = new CustomerResponse(customer);
+            if (customer == null)
+                return NotFound();
+
+            var preferences = await _preferenceRepository.GetRangeByIdsAsync(customer.PreferenceIds);
+            var promoCodes = await _promoCodeRepository.GetWhere(pc => pc.CustomerIds.Contains(id));
+
+            var response = new CustomerResponse(customer, preferences, promoCodes);
 
             return Ok(response);
         }

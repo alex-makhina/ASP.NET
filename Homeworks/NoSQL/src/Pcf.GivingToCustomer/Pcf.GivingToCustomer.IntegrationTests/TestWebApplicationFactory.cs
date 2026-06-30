@@ -2,11 +2,11 @@
 using System.Linq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using MongoDB.Driver;
 using Pcf.GivingToCustomer.Core.Abstractions.Gateways;
-using Pcf.GivingToCustomer.DataAccess;
 using Pcf.GivingToCustomer.Integration;
 using Pcf.GivingToCustomer.IntegrationTests.Data;
 
@@ -19,33 +19,33 @@ namespace Pcf.GivingToCustomer.IntegrationTests
         {
             builder.ConfigureServices(services =>
             {
+                services.AddScoped<INotificationGateway, NotificationGateway>();
+
+                var tempSp = services.BuildServiceProvider();
+                var configuration = tempSp.GetRequiredService<IConfiguration>();
+                var connString = configuration.GetConnectionString("PromocodeFactoryGivingToCustomerDb");
+
                 var descriptor = services.SingleOrDefault(
                     d => d.ServiceType ==
-                         typeof(DbContextOptions<DataContext>));
+                         typeof(IMongoDatabase));
 
                 services.Remove(descriptor);
 
-                services.AddScoped<INotificationGateway, NotificationGateway>();
-                
-                services.AddDbContext<DataContext>(x =>
-                {
-                    x.UseSqlite("Filename=PromoCodeFactoryDb.sqlite");
-                    //x.UseNpgsql(Configuration.GetConnectionString("PromoCodeFactoryDb"));
-                    x.UseSnakeCaseNamingConvention();
-                    x.UseLazyLoadingProxies();
-                });
+                var mongoClient = new MongoClient(connString);
+                var mongoDatabase = mongoClient.GetDatabase("promocode_factory_givingToCustomer_test_db_api");
+                services.AddSingleton(mongoDatabase);
 
                 var sp = services.BuildServiceProvider();
 
                 using var scope = sp.CreateScope();
                 var scopedServices = scope.ServiceProvider;
-                var dbContext = scopedServices.GetRequiredService<DataContext>();
+                var database = scopedServices.GetRequiredService<IMongoDatabase>();
                 var logger = scopedServices
                     .GetRequiredService<ILogger<TestWebApplicationFactory<TStartup>>>();
                 
                 try
                 {
-                    new EfTestDbInitializer(dbContext).InitializeDb();
+                    new MongoTestDbInitializer(database).InitializeDb();
                 }
                 catch (Exception ex)
                 {
