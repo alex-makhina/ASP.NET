@@ -17,9 +17,11 @@ services:
     ports:
       - "8091:8080"
     environment:
-      - "ConnectionStrings:PromocodeFactoryAdministrationDb=Host=promocode-factory-administration-db;Database=promocode_factory_administration_db;Username=postgres;Password=docker"          
+      - "ConnectionStrings:PromocodeFactoryAdministrationDb=Host=promocode-factory-administration-db;Database=promocode_factory_administration_db;Username=postgres;Password=docker"
+      - "RabbitMq:Host=rabbit"
     depends_on: 
       - promocode-factory-administration-db
+      - rabbit
 
 
   #ReceivingFromPartner Db
@@ -42,9 +44,11 @@ services:
     environment:
       - "ConnectionStrings:PromocodeFactoryReceivingFromPartnerDb=Host=promocode-factory-receiving-from-partner-db;Database=promocode_factory_receiving_from_partner_db;Username=postgres;Password=docker"
       - "IntegrationSettings:GivingToCustomerApiUrl=http://promocode-factory-giving-to-customer-api"    
-      - "IntegrationSettings:AdministrationApiUrl=http://promocode-factory-administration-api"       
+      - "IntegrationSettings:AdministrationApiUrl=http://promocode-factory-administration-api"
+      - "RabbitMq:Host=rabbit"       
     depends_on: 
       - promocode-factory-receiving-from-partner-db
+      - rabbit
   
   #GivingToCustomer Db
   promocode-factory-giving-to-customer-db:
@@ -64,6 +68,20 @@ services:
     ports:
       - "8093:8080"
     environment:
-      - "ConnectionStrings:PromocodeFactoryGivingToCustomerDb=Host=promocode-factory-giving-to-customer-db;Database=promocode_factory_giving_to_customer_db;Username=postgres;Password=docker"          
+      - "ConnectionStrings:PromocodeFactoryGivingToCustomerDb=Host=promocode-factory-giving-to-customer-db;Database=promocode_factory_giving_to_customer_db;Username=postgres;Password=docker"
+      - "RabbitMq:Host=rabbit"          
     depends_on: 
       - promocode-factory-giving-to-customer-db
+      - rabbit
+      
+  rabbit:
+    image: rabbitmq:3-management
+    restart: always
+    hostname: rabbitmqhost    
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+      
