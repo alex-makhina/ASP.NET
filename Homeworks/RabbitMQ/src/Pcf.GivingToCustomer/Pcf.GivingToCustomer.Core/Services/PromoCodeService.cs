@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Pcf.GivingToCustomer.Core.Abstractions.Gateways;
 using Pcf.GivingToCustomer.Core.Abstractions.Repositories;
 using Pcf.GivingToCustomer.Core.Domain;
+using Pcf.GivingToCustomer.Core.Messages;
 
 namespace Pcf.GivingToCustomer.Core.Services
 {
@@ -12,14 +14,17 @@ namespace Pcf.GivingToCustomer.Core.Services
         private readonly IRepository<PromoCode> _promoCodesRepository;
         private readonly IRepository<Preference> _preferencesRepository;
         private readonly IRepository<Customer> _customersRepository;
+        private readonly IPromoCodeNotifier _promoCodeNotifier;
 
         public PromoCodeService(IRepository<PromoCode> promoCodesRepository,
             IRepository<Preference> preferencesRepository,
-            IRepository<Customer> customersRepository)
+            IRepository<Customer> customersRepository,
+            IPromoCodeNotifier promoCodeNotifier)
         {
             _promoCodesRepository = promoCodesRepository;
             _preferencesRepository = preferencesRepository;
             _customersRepository = customersRepository;
+            _promoCodeNotifier = promoCodeNotifier;
         }
 
         public async Task GivePromoCodeToCustomersAsync(Guid preferenceId, string promoCode,
@@ -54,6 +59,16 @@ namespace Pcf.GivingToCustomer.Core.Services
             }).ToList();
 
             await _promoCodesRepository.AddAsync(promocode);
+
+            await _promoCodeNotifier.NotifyPromoCodeIssuedAsync(new PromoCodeIssuedMessage
+            {
+                PartnerId = promocode.PartnerId,
+                PromoCode = promocode.Code,
+                ServiceInfo = promocode.ServiceInfo,
+                PreferenceId = promocode.PreferenceId,
+                BeginDate = promocode.BeginDate.ToString("yyyy-MM-dd"),
+                EndDate = promocode.EndDate.ToString("yyyy-MM-dd")
+            });
         }
     }
 }

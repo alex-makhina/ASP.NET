@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+option csharp_namespace = "Pcf.GivingToCustomer.WebHost.Grpc";
+
+package customers;
+
+service CustomersService {
+  rpc GetCustomers (GetCustomersRequest) returns (GetCustomersReply);
+  rpc GetCustomer (GetCustomerRequest) returns (GetCustomerReply);
+}
+
+message GetCustomersRequest {}
+
+message GetCustomersReply {
+  repeated Customer customers = 1;
+}
+
+message GetCustomerRequest {
+  string id = 1;
+}
+
+message GetCustomerReply {
+  Customer customer = 1;
+}
+
+message Customer {
+  string id = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string email = 4;
+  repeated Preference preferences = 5;
+}
+
+message Preference {
+  string id = 1;
+  string name = 2;
+}
+
+
+
+
