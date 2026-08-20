@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using Pcf.ReceivingFromPartner.Core.Abstractions.Repositories;
 using Pcf.ReceivingFromPartner.Core.Domain;
 using Pcf.ReceivingFromPartner.Core.Abstractions.Gateways;
+using Pcf.ReceivingFromPartner.Core.Abstractions;
+using Pcf.ReceivingFromPartner.Core.Messages;
 using Pcf.ReceivingFromPartner.WebHost.Models;
 using Pcf.ReceivingFromPartner.WebHost.Mappers;
 
@@ -22,20 +24,17 @@ namespace Pcf.ReceivingFromPartner.WebHost.Controllers
         private readonly IRepository<Partner> _partnersRepository;
         private readonly IRepository<Preference> _preferencesRepository;
         private readonly INotificationGateway _notificationGateway;
-        private readonly IGivingPromoCodeToCustomerGateway _givingPromoCodeToCustomerGateway;
-        private readonly IAdministrationGateway _administrationGateway;
+        private readonly IRabbitMqProducer _rabbitMqProducer;
 
         public PartnersController(IRepository<Partner> partnersRepository,
             IRepository<Preference> preferencesRepository,
             INotificationGateway notificationGateway,
-            IGivingPromoCodeToCustomerGateway givingPromoCodeToCustomerGateway,
-            IAdministrationGateway administrationGateway)
+            IRabbitMqProducer rabbitMqProducer)
         {
             _partnersRepository = partnersRepository;
             _preferencesRepository = preferencesRepository;
             _notificationGateway = notificationGateway;
-            _givingPromoCodeToCustomerGateway = givingPromoCodeToCustomerGateway;
-            _administrationGateway = administrationGateway;
+            _rabbitMqProducer = rabbitMqProducer;
         }
 
         /// <summary>
@@ -330,17 +329,18 @@ namespace Pcf.ReceivingFromPartner.WebHost.Controllers
 
             await _partnersRepository.UpdateAsync(partner);
 
-            //TODO: Чтобы информация о том, что промокод был выдан парнером была отправлена
-            //в микросервис рассылки клиентам нужно либо вызвать его API, либо отправить событие в очередь
-            await _givingPromoCodeToCustomerGateway.GivePromoCodeToCustomer(promoCode);
-
-            //TODO: Чтобы информация о том, что промокод был выдан парнером была отправлена
-            //в микросервис администрирования нужно либо вызвать его API, либо отправить событие в очередь
-
-            if (request.PartnerManagerId.HasValue)
+            var message = new PromoCodeIssuedMessage
             {
-                await _administrationGateway.NotifyAdminAboutPartnerManagerPromoCode(request.PartnerManagerId.Value);
-            }
+                PartnerId = promoCode.PartnerId,
+                PromoCode = promoCode.Code,
+                ServiceInfo = promoCode.ServiceInfo,
+                PreferenceId = promoCode.PreferenceId,
+                BeginDate = promoCode.BeginDate.ToShortDateString(),
+                EndDate = promoCode.EndDate.ToShortDateString(),
+                PartnerManagerId = request.PartnerManagerId
+            };
+
+            _rabbitMqProducer.PublishPromoCodeIssued(message);
 
             return CreatedAtAction(nameof(GetPartnerPromoCodeAsync),
                 new { id = partner.Id, promoCodeId = promoCode.Id }, null);
