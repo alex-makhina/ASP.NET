@@ -13,7 +13,10 @@ using Pcf.GivingToCustomer.DataAccess.Data;
 using Pcf.GivingToCustomer.DataAccess;
 using Pcf.GivingToCustomer.DataAccess.Repositories;
 using Pcf.GivingToCustomer.Integration;
+using Pcf.GivingToCustomer.WebHost.GrpcServices;
 using Pcf.GivingToCustomer.WebHost.HostedServices;
+using Pcf.GivingToCustomer.WebHost.Hubs;
+using Pcf.GivingToCustomer.WebHost.Notification;
 
 namespace Pcf.GivingToCustomer.WebHost
 {
@@ -32,8 +35,12 @@ namespace Pcf.GivingToCustomer.WebHost
         {
             services.AddControllers().AddMvcOptions(x =>
                 x.SuppressAsyncSuffixInActionNames = false);
+            services.AddGrpc();
+            services.AddGrpcReflection();
+            services.AddSignalR();
             services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
             services.AddScoped<INotificationGateway, NotificationGateway>();
+            services.AddSingleton<IPromoCodeNotifier, PromoCodeNotifier>();
             services.AddScoped<IDbInitializer, EfDbInitializer>();
             services.AddScoped<IPromoCodeService, PromoCodeService>();
             services.AddHostedService<PromoCodeBackgroundService>();
@@ -79,6 +86,9 @@ namespace Pcf.GivingToCustomer.WebHost
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapGrpcService<CustomersGrpcService>();
+                endpoints.MapGrpcReflectionService();
+                endpoints.MapHub<PromoCodeHub>("/hubs/promocode");
             });
 
             dbInitializer.InitializeDb();

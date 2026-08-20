@@ -17,5 +17,5 @@ RUN dotnet publish -c Release -o out
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 COPY --from=build /app/aspnetapp/out ./
-EXPOSE 8080
+EXPOSE 8093 8094
 ENTRYPOINT ["dotnet", "Pcf.GivingToCustomer.WebHost.dll"]
