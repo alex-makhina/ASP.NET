@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="weatherapp.client/weatherapp.client.esproj">
+    <Build />
+    <Deploy />
+  </Project>
+  <Project Path="WeatherApp.Server/WeatherApp.Server.csproj" />
+</Solution>
