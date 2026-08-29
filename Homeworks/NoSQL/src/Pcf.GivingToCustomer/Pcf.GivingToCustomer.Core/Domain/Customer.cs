@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace Pcf.GivingToCustomer.Core.Domain
 {
@@ -12,8 +14,8 @@ namespace Pcf.GivingToCustomer.Core.Domain
 
         public string Email { get; set; }
 
-        public virtual ICollection<CustomerPreference> Preferences { get; set; }
+        public List<Guid> PreferenceIds { get; set; } = new List<Guid>();
         
-        public virtual ICollection<PromoCodeCustomer> PromoCodes { get; set; }
+        public List<Guid> PromoCodeIds { get; set; } = new List<Guid>();
     }
 }

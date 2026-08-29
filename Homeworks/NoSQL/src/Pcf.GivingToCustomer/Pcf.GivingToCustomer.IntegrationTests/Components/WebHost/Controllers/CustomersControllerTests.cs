@@ -11,21 +11,24 @@ using Xunit;
 
 namespace Pcf.GivingToCustomer.IntegrationTests.Components.WebHost.Controllers
 {
-    [Collection(EfDatabaseCollection.DbCollection)]
-    public class CustomersControllerTests: IClassFixture<EfDatabaseFixture>
+    [Collection(MongoDatabaseCollection.DbCollection)]
+    public class CustomersControllerTests: IClassFixture<MongoDatabaseFixture>
     {
         private readonly CustomersController _customersController;
-        private readonly EfRepository<Customer> _customerRepository;
-        private readonly EfRepository<Preference> _preferenceRepository;
+        private readonly MongoRepository<Customer> _customerRepository;
+        private readonly MongoRepository<Preference> _preferenceRepository;
+        private readonly MongoRepository<PromoCode> _promoCodeRepository;
         
-        public CustomersControllerTests(EfDatabaseFixture efDatabaseFixture)
+        public CustomersControllerTests(MongoDatabaseFixture mongoDatabaseFixture)
         {
-            _customerRepository = new EfRepository<Customer>(efDatabaseFixture.DbContext);
-            _preferenceRepository = new EfRepository<Preference>(efDatabaseFixture.DbContext);
+            _customerRepository = new MongoRepository<Customer>(mongoDatabaseFixture.Database);
+            _preferenceRepository = new MongoRepository<Preference>(mongoDatabaseFixture.Database);
+            _promoCodeRepository = new MongoRepository<PromoCode>(mongoDatabaseFixture.Database);
             
             _customersController = new CustomersController(
                 _customerRepository, 
-                _preferenceRepository);
+                _preferenceRepository,
+                _promoCodeRepository);
         }
         
         [Fact]
@@ -55,10 +58,10 @@ namespace Pcf.GivingToCustomer.IntegrationTests.Components.WebHost.Controllers
             actual.Email.Should().Be(request.Email);
             actual.FirstName.Should().Be(request.FirstName);
             actual.LastName.Should().Be(request.LastName);
-            actual.Preferences.Should()
+            actual.PreferenceIds.Should()
                 .ContainSingle()
                 .And
-                .Contain(x => x.PreferenceId == preferenceId);
+                .Contain(x => x == preferenceId);
         }
     }
 }

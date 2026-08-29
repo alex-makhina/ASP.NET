@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Pcf.GivingToCustomer.Core.Domain;
 using Pcf.GivingToCustomer.WebHost.Models;
 
@@ -21,22 +20,9 @@ using Pcf.GivingToCustomer.WebHost.Models;
             promocode.BeginDate = DateTime.Parse(request.BeginDate);
             promocode.EndDate = DateTime.Parse(request.EndDate);
 
-            promocode.Preference = preference;
             promocode.PreferenceId = preference.Id;
 
-            promocode.Customers = new List<PromoCodeCustomer>();
-
-            foreach (var item in customers)
-            {
-                promocode.Customers.Add(new PromoCodeCustomer()
-                {
-
-                    CustomerId = item.Id,
-                    Customer = item,
-                    PromoCodeId = promocode.Id,
-                    PromoCode = promocode
-                });
-            };
+            promocode.CustomerIds = customers.Select(x => x.Id).ToList();
 
             return promocode;
         }

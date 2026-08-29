@@ -18,14 +18,12 @@ namespace Pcf.GivingToCustomer.IntegrationTests.Api.WebHost.Controllers
 {
 
     public class CustomersControllerTests
-        //: IClassFixture<WebApplicationFactory<Startup>> // Postgres
-        : IClassFixture<TestWebApplicationFactory<Startup>> // SqlLite
+        : IClassFixture<TestWebApplicationFactory<Startup>>
     {
         private readonly WebApplicationFactory<Startup> _factory;
         
         public CustomersControllerTests(
-            //WebApplicationFactory<Startup> factory  // Postgres
-            TestWebApplicationFactory<Startup> factory // SqlLite
+            TestWebApplicationFactory<Startup> factory
             )
         {
             _factory = factory;
@@ -106,7 +104,8 @@ namespace Pcf.GivingToCustomer.IntegrationTests.Api.WebHost.Controllers
                         Id = Guid.Parse("76324c47-68d2-472d-abb8-33cfa8cc0c84"),
                         Name = "Дети",                    
                     }
-                }
+                },
+                PromoCodes = new List<PromoCodeShortResponse>()
             };
 
             //Act
